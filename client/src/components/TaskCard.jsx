@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Spinner from "./Spinner.jsx";
 
 function formatDue(value) {
   if (!value) return null;
@@ -14,52 +15,78 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
     priority: task.priority,
     dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
   });
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState(null); // 'save' | 'start' | 'delete' | 'toggle' | null
+  const [actionError, setActionError] = useState("");
 
-  async function save(patch) {
-    setBusy(true);
+  const isBusy = busyAction !== null;
+
+  async function save(patch, actionType = "save") {
+    setBusyAction(actionType);
+    setActionError("");
     try {
       await onUpdate(task._id, patch);
-      setEditing(false);
+      if (actionType === "save") {
+        setEditing(false);
+      }
+    } catch (err) {
+      setActionError(err.message || "Failed to update task");
     } finally {
-      setBusy(false);
+      setBusyAction(null);
+    }
+  }
+
+  async function handleDelete() {
+    setBusyAction("delete");
+    setActionError("");
+    try {
+      await onDelete(task._id);
+    } catch (err) {
+      setActionError(err.message || "Failed to delete task");
+      setBusyAction(null);
     }
   }
 
   async function toggleDone() {
-    await save({ status: task.status === "done" ? "todo" : "done" });
+    await save({ status: task.status === "done" ? "todo" : "done" }, "toggle");
   }
 
   if (editing) {
     return (
-      <article className="task">
+      <article className={`task task-editing ${isBusy ? "task-busy" : ""}`}>
         <span />
         <form
           className="edit-grid"
           onSubmit={(e) => {
             e.preventDefault();
-            save({
-              title: draft.title.trim(),
-              description: draft.description.trim(),
-              status: draft.status,
-              priority: draft.priority,
-              dueDate: draft.dueDate || null,
-            });
+            save(
+              {
+                title: draft.title.trim(),
+                description: draft.description.trim(),
+                status: draft.status,
+                priority: draft.priority,
+                dueDate: draft.dueDate || null,
+              },
+              "save"
+            );
           }}
         >
           <input
             value={draft.title}
             onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+            disabled={isBusy}
             required
+            autoFocus
           />
           <textarea
             value={draft.description}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
+            disabled={isBusy}
           />
           <div className="row">
             <select
               value={draft.status}
               onChange={(e) => setDraft({ ...draft, status: e.target.value })}
+              disabled={isBusy}
             >
               <option value="todo">To do</option>
               <option value="in_progress">In progress</option>
@@ -68,6 +95,7 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
             <select
               value={draft.priority}
               onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
+              disabled={isBusy}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -77,14 +105,38 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
               type="date"
               value={draft.dueDate}
               onChange={(e) => setDraft({ ...draft, dueDate: e.target.value })}
+              disabled={isBusy}
             />
-            <button className="primary" disabled={busy} type="submit">
-              Save
+            <button className="primary" disabled={isBusy} type="submit">
+              {busyAction === "save" ? (
+                <>
+                  <Spinner size={14} />
+                  <span>Saving…</span>
+                </>
+              ) : (
+                <span>Save</span>
+              )}
             </button>
           </div>
+          {actionError && <p className="error error-compact">{actionError}</p>}
         </form>
         <div className="actions">
-          <button className="ghost" type="button" onClick={() => setEditing(false)}>
+          <button
+            className="ghost"
+            type="button"
+            disabled={isBusy}
+            onClick={() => {
+              setEditing(false);
+              setActionError("");
+              setDraft({
+                title: task.title,
+                description: task.description || "",
+                status: task.status,
+                priority: task.priority,
+                dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+              });
+            }}
+          >
             Cancel
           </button>
         </div>
@@ -93,14 +145,22 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
   }
 
   return (
-    <article className={`task ${task.status === "done" ? "done" : ""}`}>
-      <input
-        className="check"
-        type="checkbox"
-        checked={task.status === "done"}
-        onChange={toggleDone}
-        aria-label={`Mark ${task.title} done`}
-      />
+    <article
+      className={`task ${task.status === "done" ? "done" : ""} ${
+        busyAction === "delete" ? "task-deleting" : ""
+      } ${isBusy ? "task-busy" : ""}`}
+    >
+      <div className="check-wrapper">
+        <input
+          className="check"
+          type="checkbox"
+          checked={task.status === "done"}
+          disabled={isBusy}
+          onChange={toggleDone}
+          aria-label={`Mark ${task.title} done`}
+        />
+        {busyAction === "toggle" && <Spinner size={12} className="check-spinner" />}
+      </div>
       <div>
         <p className="title">{task.title}</p>
         {task.description ? <p className="desc">{task.description}</p> : null}
@@ -109,27 +169,46 @@ export default function TaskCard({ task, onUpdate, onDelete }) {
           <span className={`chip ${task.priority}`}>{task.priority} priority</span>
           {task.dueDate && <span className="chip">due {formatDue(task.dueDate)}</span>}
         </div>
+        {actionError && <p className="error error-compact">{actionError}</p>}
       </div>
       <div className="actions">
         {task.status === "todo" && (
           <button
-            className="ghost"
+            className="ghost start-btn"
             type="button"
-            onClick={() => save({ status: "in_progress" })}
+            disabled={isBusy}
+            onClick={() => save({ status: "in_progress" }, "start")}
           >
-            Start
+            {busyAction === "start" ? (
+              <>
+                <Spinner size={13} />
+                <span>Starting…</span>
+              </>
+            ) : (
+              <span>Start</span>
+            )}
           </button>
         )}
-        <button className="ghost" type="button" onClick={() => setEditing(true)}>
+        <button
+          className="ghost edit-btn"
+          type="button"
+          disabled={isBusy}
+          onClick={() => {
+            setEditing(true);
+            setActionError("");
+          }}
+        >
           Edit
         </button>
         <button
-          className="icon-btn"
+          className="icon-btn delete-btn"
           type="button"
-          onClick={() => onDelete(task._id)}
+          disabled={isBusy}
+          onClick={handleDelete}
           aria-label="Delete task"
+          title="Delete task"
         >
-          ×
+          {busyAction === "delete" ? <Spinner size={14} /> : "×"}
         </button>
       </div>
     </article>

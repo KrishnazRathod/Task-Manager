@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createTask, deleteTask, fetchTasks, updateTask } from "./api.js";
 import TaskForm from "./components/TaskForm.jsx";
 import TaskCard from "./components/TaskCard.jsx";
+import TaskListSkeleton from "./components/TaskListSkeleton.jsx";
 
 const FILTERS = [
   { id: "all", label: "All" },
@@ -19,6 +20,7 @@ export default function App() {
 
   const load = useCallback(async () => {
     setError("");
+    setLoading(true);
     try {
       const data = await fetchTasks({
         status: filter === "all" ? "" : filter,
@@ -102,30 +104,41 @@ export default function App() {
             </button>
           ))}
         </div>
-        <input
-          className="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search title or notes"
-        />
+        <div className="search-wrap">
+          <input
+            className="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search title or notes"
+          />
+          {loading && query && (
+            <span className="search-loader" aria-label="Searching">
+              <span className="mini-spinner" />
+            </span>
+          )}
+        </div>
       </div>
 
       {error && <p className="error">{error}</p>}
-      {loading && <p className="empty">Loading tasks…</p>}
-      {!loading && !error && tasks.length === 0 && (
-        <p className="empty">No tasks here yet. Add one above.</p>
-      )}
 
-      <div className="list">
-        {tasks.map((task) => (
-          <TaskCard
-            key={task._id}
-            task={task}
-            onUpdate={handleUpdate}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <TaskListSkeleton count={tasks.length > 0 ? Math.min(tasks.length, 4) : 3} />
+      ) : tasks.length === 0 && !error ? (
+        <div className="empty-state">
+          <p className="empty">No tasks here yet. Add one above.</p>
+        </div>
+      ) : (
+        <div className="list">
+          {tasks.map((task) => (
+            <TaskCard
+              key={task._id}
+              task={task}
+              onUpdate={handleUpdate}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

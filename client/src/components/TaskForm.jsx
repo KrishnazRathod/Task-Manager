@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Spinner from "./Spinner.jsx";
 
 const empty = {
   title: "",
@@ -47,6 +48,7 @@ export default function TaskForm({ onCreate }) {
         onChange={(e) => setField("title", e.target.value)}
         placeholder="What needs doing?"
         maxLength={200}
+        disabled={saving}
         autoFocus
       />
       <textarea
@@ -54,11 +56,13 @@ export default function TaskForm({ onCreate }) {
         onChange={(e) => setField("description", e.target.value)}
         placeholder="Notes (optional)"
         maxLength={2000}
+        disabled={saving}
       />
       <div className="row">
         <select
           value={form.priority}
           onChange={(e) => setField("priority", e.target.value)}
+          disabled={saving}
         >
           <option value="low">Low priority</option>
           <option value="medium">Medium priority</option>
@@ -68,10 +72,18 @@ export default function TaskForm({ onCreate }) {
           type="date"
           value={form.dueDate}
           onChange={(e) => setField("dueDate", e.target.value)}
+          disabled={saving}
         />
         <span />
-        <button className="primary" type="submit" disabled={saving}>
-          {saving ? "Adding…" : "Add task"}
+        <button className="primary submit-btn" type="submit" disabled={saving}>
+          {saving ? (
+            <>
+              <Spinner size={16} />
+              <span>Adding…</span>
+            </>
+          ) : (
+            <span>Add task</span>
+          )}
         </button>
       </div>
       {error && <p className="error">{error}</p>}
