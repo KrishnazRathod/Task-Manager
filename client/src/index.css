@@ -1,0 +1,303 @@
+:root {
+  --paper: #f3ece1;
+  --ink: #1c1915;
+  --muted: #6d6458;
+  --line: #d8cfc2;
+  --card: #fbf7f0;
+  --accent: #b5441d;
+  --accent-dark: #8d3214;
+  --ok: #2f6b4f;
+  --warn: #a15c12;
+  --shadow: 0 18px 40px rgba(28, 25, 21, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, #fff8ee 0%, transparent 55%),
+    radial-gradient(900px 420px at 100% 0%, #ead7c4 0%, transparent 45%),
+    var(--paper);
+  font-family: Outfit, system-ui, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app {
+  width: min(1080px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 36px 0 72px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+h1 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(2.1rem, 4vw, 3.4rem);
+  font-weight: 650;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.lede {
+  max-width: 42ch;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(88px, 1fr));
+  gap: 10px;
+  min-width: 280px;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  box-shadow: var(--shadow);
+}
+
+.stat b {
+  display: block;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.5rem;
+}
+
+.stat span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.composer {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 0.7fr 0.7fr auto;
+  gap: 10px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 11px 12px;
+}
+
+textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.primary {
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.primary:hover {
+  background: var(--accent-dark);
+}
+
+.ghost,
+.icon-btn {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.ghost {
+  padding: 8px 12px;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin: 18px 0 14px;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filters button {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.filters button.active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.search {
+  margin-left: auto;
+  min-width: min(280px, 100%);
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.task {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.task.done .title {
+  text-decoration: line-through;
+  color: var(--muted);
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  margin-top: 4px;
+  accent-color: var(--ok);
+}
+
+.title {
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.desc {
+  margin: 0;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.chip {
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.chip.high {
+  color: var(--accent);
+  border-color: #ecc4b4;
+}
+
+.chip.in_progress {
+  color: var(--warn);
+}
+
+.chip.done {
+  color: var(--ok);
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.edit-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.error,
+.empty {
+  padding: 18px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.error {
+  color: var(--accent);
+}
+
+@media (max-width: 800px) {
+  .hero,
+  .row {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .stats,
+  .search {
+    width: 100%;
+    margin-left: 0;
+  }
+}
